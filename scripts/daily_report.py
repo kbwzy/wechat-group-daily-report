@@ -510,7 +510,7 @@ def md_report(mat,ed):
         first=min(sources,key=lambda message:message.get('time','')) if sources else {}
         links.append((first.get('time',''),f"- {short_time(first.get('time',''))} {md_bold(first.get('sender','分享者'))}｜{md_escape(row['title'])}｜[{md_escape(row['url'])}]({md_url(row['url'])})"))
     lines += [line for _,line in sorted(links)] or ['本时段群内没有可读链接分享。']
-    lines += ['','<!-- group-report:footnote -->以上内容由「微信个人情报库」群聊日报 Skill 整理。仅覆盖本机已采集记录，附件与外链正文未核验；完整证据保留在本机素材。']
+    lines += ['','<!-- group-report:footnote -->以上内容由「微信个人情报助手」整理。仅覆盖本机已采集记录，附件与外链正文未核验；完整证据保留在本机素材。']
     sign = reference_view().signature_line()
     if sign: lines += ['', sign]
     return '\n'.join(lines)+'\n'

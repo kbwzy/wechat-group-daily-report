@@ -1,0 +1,71 @@
+name: test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Run test suite (standard library only)
+        run: python -m unittest discover -s tests -v
+
+      - name: Check every module imports cleanly
+        run: |
+          python -c "import ast, pathlib, sys
+          for f in pathlib.Path('scripts').glob('*.py'):
+              ast.parse(f.read_text(encoding='utf-8'), feature_version=(3, 9))
+          print('syntax ok at 3.9')"
+
+      - name: Offline pipeline smoke test
+        run: |
+          python scripts/daily_report.py prepare examples/group-messages.json \
+            --chat "示例·独立开发者交流群" \
+            --since 2026-10-20T00:00:00+08:00 --until 2026-10-21T00:00:00+08:00 \
+            --timezone Asia/Shanghai --name-mode display \
+            --owner-alias "示例读者" --out /tmp/run
+          cp examples/editorial.json /tmp/run/editorial.json
+          python scripts/daily_report.py validate --strict --out /tmp/run
+          python scripts/daily_report.py render --out /tmp/run
+      - name: PNG degradation contract holds
+        # A bare venv has no Pillow/Playwright, so this always exercises the
+        # degradation path regardless of what the runner image ships with.
+        run: |
+          python -m venv /tmp/bare
+          rm -rf /tmp/deg
+          /tmp/bare/bin/python scripts/daily_report.py prepare examples/group-messages.json \
+            --chat "示例·独立开发者交流群" \
+            --since 2026-10-20T00:00:00+08:00 --until 2026-10-21T00:00:00+08:00 \
+            --timezone Asia/Shanghai --name-mode display \
+            --owner-alias "示例读者" --out /tmp/deg
+          cp examples/editorial.json /tmp/deg/editorial.json
+
+          set +e
+          /tmp/bare/bin/python scripts/daily_report.py render --out /tmp/deg --png
+          code=$?
+          set -e
+          echo "render exit=$code"
+          test "$code" = "2" || { echo "expected exit 2 when PNG deps are missing, got $code"; exit 1; }
+
+          test -f /tmp/deg/group_daily_report.md
+          test -f /tmp/deg/group_daily_report.html
+          test ! -f /tmp/deg/group_daily_report.png
+          python -c "import json; s=json.load(open('/tmp/deg/status.json')); assert s['png']=='missing-dependency', s; print('degradation contract ok')"

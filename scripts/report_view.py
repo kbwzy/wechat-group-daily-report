@@ -182,6 +182,6 @@ def render_html(material, editorial, link_rows):
         coverage = '基于已有导出整理，采集完整性未确认；附件与外链正文未核验。'
     sign = signature_line()
     sign_html = f'<p class="sign">{escape(sign)}</p>' if sign else ''
-    blocks.append(f'</section><footer class="note"><p>以上内容由「微信个人情报库」群聊日报 Skill 整理，未发送微信。</p><p>{escape(coverage)} 编辑判断供参考，详细证据保留在本机素材与 Markdown。</p>{sign_html}</footer>')
+    blocks.append(f'</section><footer class="note"><p>以上内容由「微信个人情报助手」整理，未发送微信。</p><p>{escape(coverage)} 编辑判断供参考，详细证据保留在本机素材与 Markdown。</p>{sign_html}</footer>')
     title = escape(material['chat']+' 今日内容总结')
     return '<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta http-equiv="Content-Security-Policy" content="default-src \'none\'; style-src \'unsafe-inline\'; script-src \'none\'; connect-src \'none\'; img-src data:; base-uri \'none\'; form-action \'none\'"><title>'+title+'</title><style>'+CSS+'</style></head><body><main class="page" data-layout="editorial-v2">'+''.join(blocks)+'</main></body></html>'

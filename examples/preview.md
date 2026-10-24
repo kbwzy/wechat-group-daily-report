@@ -64,4 +64,4 @@
 - 10:05 **孙七**｜按需求频次决定排期的基础方法｜[https://example\.org/analytics-basics](https://example.org/analytics-basics)
 - 16:30 **王五**｜独立产品定价的详细说明｜[https://example\.org/pricing-guide](https://example.org/pricing-guide)
 
-<!-- group-report:footnote -->以上内容由「微信个人情报库」群聊日报 Skill 整理。仅覆盖本机已采集记录，附件与外链正文未核验；完整证据保留在本机素材。
+<!-- group-report:footnote -->以上内容由「微信个人情报助手」整理。仅覆盖本机已采集记录，附件与外链正文未核验；完整证据保留在本机素材。

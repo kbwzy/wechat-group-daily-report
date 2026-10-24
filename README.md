@@ -1,8 +1,33 @@
-# wechat-group-daily-report
+<h1 align="center">微信个人情报助手</h1>
 
-把你的微信群聊变成一张**能读懂、可核查**的图文日报。
+<p align="center"><sub>WeChat Group Daily Report</sub></p>
 
-输入是一个群、一个时间窗；输出是一张 PNG 长图，加上 HTML 和 Markdown。不是聊天记录的缩写版，而是像一位看完群聊的群友给你讲今天发生了什么：结论式标题、关键发言、编辑判断、可做选题、需要你留意的事、群里的链接。
+<p align="center">
+  <b>把你的微信群聊变成一张能读懂、可核查的图文日报。</b><br>
+  输入一个群、一个时间窗，输出一张 PNG 长图 + HTML + Markdown。<br>
+  不是聊天记录的缩写版，是像一位看完全程的群友给你讲今天真正发生了什么。
+</p>
+
+<p align="center">
+  <a href="https://github.com/kbwzy/wechat-group-daily-report/actions/workflows/test.yml"><img alt="test" src="https://github.com/kbwzy/wechat-group-daily-report/actions/workflows/test.yml/badge.svg"></a>
+  <a href="https://www.python.org/downloads/"><img alt="Python 3.9+" src="https://img.shields.io/badge/python-3.9%2B-blue.svg"></a>
+  <a href="LICENSE"><img alt="MIT" src="https://img.shields.io/badge/license-MIT-green.svg"></a>
+  <img alt="stdlib only" src="https://img.shields.io/badge/runtime-stdlib%20only-brightgreen.svg">
+  <img alt="read-only" src="https://img.shields.io/badge/WeChat-read--only-informational.svg">
+</p>
+
+<p align="center">
+  <a href="#快速开始三分钟无需微信">快速开始</a> ·
+  <a href="#安装">安装</a> ·
+  <a href="#它解决什么问题">为什么值得用</a> ·
+  <a href="#边界">边界</a>
+</p>
+
+![示例日报](examples/preview.png)
+
+<p align="center"><sub>↑ 上面这张图由仓库内的 <code>examples/</code> 合成数据在离线环境生成，可直接复现。</sub></p>
+
+## 它怎么工作
 
 ```text
 群聊 JSON  ──prepare──▶  素材 + 证据 ID
@@ -16,16 +41,20 @@
                           PNG 长图 / HTML / Markdown
 ```
 
+三件事分开做，各管一段：**程序管事实**（切片、清洗、统计、抽链接、校验引用），**模型管表达**（标题、关键原话、判断），**模板管版式**（模型只写 JSON，碰不到 HTML）。
+
 ## 它解决什么问题
 
-机器摘要只会按时间罗列。日报要回答的是另外几个问题：今天真正值得读的主线是什么？谁提出了问题，谁给了反例，后来有没有改口？哪条讨论能长成一个选题？有哪些事其实是在找你？
+机器摘要只会按时间罗列。日报要回答的是另外几个问题：
 
-这个 Skill 把工作拆成两半，各做擅长的事：
+- 今天真正值得读的主线是什么？
+- 谁提出了问题、谁给了反例、后来有没有改口？
+- 哪条讨论能长成一个选题？
+- 有哪些事其实是在找你？
 
-- **程序管事实**：切窗口、清洗 XML 引用、统计发言、抽链接、校验证据引用与版式。同一份输入渲染结果确定，不会今天一个样明天一个样。
-- **模型管表达**：在素材上写结论式标题、挑关键原话、给一段有判断的总结。
+常见做法是把聊天丢给模型直接总结，结果每次格式不同、引用对不上、改口被截断。这里用**证据绑定**把模型约束住：每条事实都要挂一条真实消息的 ID，跨群或凭空捏造的 ID 会被校验器拒绝。同一份输入，渲染结果确定。
 
-程序校验能保证结构、引用和密度；它**不能**保证观点真实。这一点在每份产物里都会写明。
+程序校验能保证结构、引用和密度；它**不能**保证观点真实。每份产物都显式标注 `semantic_truth: not-verified`，不冒充已验证。
 
 ## 特性
 
@@ -36,6 +65,28 @@
 - **不覆盖历史**：每轮新建目录，重复执行不会删掉昨天的报告。
 - **PNG 失败不撒谎**：缺 Playwright/Pillow/Chrome 时仍交 Markdown 和 HTML，状态明确标 `partial`，不会写成功。
 - **只读**：不发送、不回复、不改微信、不取密钥。
+
+## 快速开始（三分钟，无需微信）
+
+`examples/` 里有一份合成群聊，token 全是占位，不会碰你的微信：
+
+```bash
+SKILL="$PWD"
+RUN=/tmp/wechat-daily-demo && rm -rf "$RUN"
+
+python3 "$SKILL/scripts/daily_report.py" prepare "$SKILL/examples/group-messages.json" \
+  --chat "示例·独立开发者交流群" \
+  --since 2026-10-20T00:00:00+08:00 --until 2026-10-21T00:00:00+08:00 \
+  --timezone Asia/Shanghai --name-mode display --owner-alias "示例读者" --out "$RUN"
+
+cp "$SKILL/examples/editorial.json" "$RUN/editorial.json"
+python3 "$SKILL/scripts/daily_report.py" validate --strict --out "$RUN"
+python3 "$SKILL/scripts/daily_report.py" render --out "$RUN" --png
+```
+
+跑出来的结果和 [`examples/preview.png`](examples/preview.png) 一致。想看它长什么样：
+
+![示例日报](examples/preview.png)
 
 ## 安装
 
@@ -81,7 +132,7 @@ $AGENTS_HOME/skills  →  $CLAUDE_HOME/skills  →  $CODEX_HOME/skills
 | Playwright + Pillow + 本机 Chrome | `pillow>=10.0`、`playwright>=1.40` | PNG 长图（430 CSS 像素、3 倍分段截图拼接） | 只影响 PNG |
 | Claude Code CLI | 支持 `--restricted` 的版本 | `run_daily.py` 的无人值守编辑桥接 | 只影响定时模式 |
 
-**只依赖标准库的部分不需要额外安装**：`prepare`、`validate`、`render` 的 Markdown/HTML 输出，以及全部 55 项测试。Pillow 与 Playwright 只在 `render --png` 时导入，缺了不影响其他步骤。
+**只依赖标准库的部分不需要额外安装**：`prepare`、`validate`、`render` 的 Markdown/HTML 输出，以及全部 57 项测试。Pillow 与 Playwright 只在 `render --png` 时导入，缺了不影响其他步骤。
 
 #### 获取实时取数依赖
 
@@ -93,7 +144,7 @@ cd wechat-intelligence-hub
 ./scripts/install.sh --with-sqlcipher --with-html
 ```
 
-安装后会得到 `wechat-cli` 与 `wechat-intelligence-hub` 两个 Skill。本仓库按 `$CLAUDE_HOME/skills` → `$CODEX_HOME/skills` → `~/.claude/skills` → `~/.codex/skills` 的顺序找它们，也可以用配置项 `hub_entry` / `reader` 手动指定。
+安装后会得到 `wechat-cli` 与 `wechat-intelligence-hub` 两个 Skill。查找顺序见上方[同级依赖怎么找](#同级依赖怎么找)，也可以用配置项 `hub_entry` / `reader` 手动指定。
 
 > **注意**：装好 ≠ 能读。完整数据库模式还需要你已经获得本机微信数据库的访问材料（key）。没有时 `doctor` 会失败，本 Skill 会如实报错并保留素材，不会退化成通知预览。接入请参考上游的 [五步首次接入工作流](https://github.com/Rion-Wu-tech/wechat-intelligence-hub/blob/main/skills/wechat-cli/references/access-onboarding.md)。
 
@@ -101,7 +152,7 @@ cd wechat-intelligence-hub
 
 ```bash
 python3 -m venv .venv && . .venv/bin/activate
-python3 -m unittest discover -s tests     # 55 项，无需任何第三方包
+python3 -m unittest discover -s tests     # 57 项，无需任何第三方包
 
 pip install -r requirements.txt           # 仅想做 PNG 时才需要
 ```
@@ -110,33 +161,11 @@ pip install -r requirements.txt           # 仅想做 PNG 时才需要
 
 | Python | 测试套件 | PNG | 说明 |
 |---|---|---|---|
-| 3.13 | ✅ 55/55 | ✅ | |
-| 3.14 | ✅ 55/55 | ✅ | Pillow 13 / Playwright 1.64 验证通过 |
+| 3.13 | ✅ 57/57 | ✅ | |
+| 3.14 | ✅ 57/57 | ✅ | Pillow 13 / Playwright 1.64 验证通过 |
 | 3.9 – 3.12 | 语法层面兼容 | 用 `pillow>=10.0` | 未在本仓库逐版本实测 |
 
 PNG 依赖**不装也能用**：`render` 会照常产出 Markdown 和 HTML，只在 `status.json` 里写 `png: missing-dependency` 并以退出码 2 返回。它不会静默跳过，也不会假装成功。
-
-## 三分钟离线试跑
-
-`examples/` 里有一份合成群聊，token 全是占位，不会碰你的微信：
-
-```bash
-SKILL="$PWD"
-RUN=/tmp/wechat-daily-demo && rm -rf "$RUN"
-
-python3 "$SKILL/scripts/daily_report.py" prepare "$SKILL/examples/group-messages.json" \
-  --chat "示例·独立开发者交流群" \
-  --since 2026-10-20T00:00:00+08:00 --until 2026-10-21T00:00:00+08:00 \
-  --timezone Asia/Shanghai --name-mode display --owner-alias "示例读者" --out "$RUN"
-
-cp "$SKILL/examples/editorial.json" "$RUN/editorial.json"
-python3 "$SKILL/scripts/daily_report.py" validate --strict --out "$RUN"
-python3 "$SKILL/scripts/daily_report.py" render --out "$RUN" --png
-```
-
-跑出来的结果和 [`examples/preview.png`](examples/preview.png) 一致。想看它长什么样：
-
-![示例日报](examples/preview.png)
 
 ## 真实使用
 
@@ -230,7 +259,7 @@ scripts/
   report_view.py         固定 HTML 版式
   layout_check.py        渲染后的版式合同复查
 examples/                可离线跑通的合成示例
-tests/                   50 项单元测试
+tests/                   57 项单元测试
 evals/                   路由触发用例与语义配置
 ```
 
