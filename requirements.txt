@@ -1,0 +1,14 @@
+# Optional dependencies for PNG rendering only.
+#
+#   pip install -r requirements.txt
+#
+# prepare / validate / render (Markdown + HTML) and the whole test suite need
+# nothing but the Python standard library. Install this only when you want
+# `render --png`, which screenshots the HTML in a local Chrome.
+#
+# Chrome itself is not installed by pip: the renderer drives a browser you
+# already have. On macOS it looks for
+# /Applications/Google Chrome.app/Contents/MacOS/Google Chrome.
+
+pillow>=10.0
+playwright>=1.40

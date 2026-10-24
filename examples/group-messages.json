@@ -1,0 +1,24 @@
+{
+  "since": "2026-10-20T00:00:00+08:00",
+  "until": "2026-10-21T00:00:00+08:00",
+  "coverage": {
+    "source": "synthetic example for offline rehearsal",
+    "live_database_read_ok": true,
+    "collected_at": "2026-10-21T00:10:00+08:00",
+    "read_limit": 20000,
+    "cap_reached": false,
+    "completeness": "synthetic"
+  },
+  "messages": [
+    {"chat": "示例·独立开发者交流群", "sender": "张三", "time": "2026-10-20T09:12:00+08:00", "content": "想给我那个记账小工具加一个导出 PDF 的按钮，你们觉得值不值？", "source_file": "example"},
+    {"chat": "示例·独立开发者交流群", "sender": "李四", "time": "2026-10-20T09:15:00+08:00", "content": "先别做。上个月你说要加的那个都没人点，导出这种功能做出来大概率也是放着。", "source_file": "example"},
+    {"chat": "示例·独立开发者交流群", "sender": "王五", "time": "2026-10-20T09:20:00+08:00", "content": "我真做过导出，做完三个月一共 7 次点击。复盘写在这里 https://example.org/export-postmortem", "source_file": "example"},
+    {"chat": "示例·独立开发者交流群", "sender": "李四", "time": "2026-10-20T09:31:00+08:00", "content": "补充一下，你那个不是导出没用，是入口藏在设置第三层。导出本身是要的，位置不对而已。", "source_file": "example"},
+    {"chat": "示例·独立开发者交流群", "sender": "孙七", "time": "2026-10-20T10:05:00+08:00", "content": "我们做法是先看有没有人问过，过去半年客服记录里出现两次以上才排期。基础方法可以参考 https://example.org/analytics-basics", "source_file": "example"},
+    {"chat": "示例·独立开发者交流群", "sender": "赵六", "time": "2026-10-20T10:40:00+08:00", "content": "顺带问个别的，你们产品名是自己想的还是找设计师？我卡在起名一周了。", "source_file": "example"},
+    {"chat": "示例·独立开发者交流群", "sender": "孙七", "time": "2026-10-20T11:02:00+08:00", "content": "自己想的。名字唯一要过的是注册和搜索，先查重再纠结好不好听。", "source_file": "example"},
+    {"chat": "示例·独立开发者交流群", "sender": "张三", "time": "2026-10-20T14:02:00+08:00", "content": "@示例读者 你那个日报工具最后加导出了吗？我想参考一下。", "source_file": "example"},
+    {"chat": "示例·独立开发者交流群", "sender": "王五", "time": "2026-10-20T16:30:00+08:00", "content": "定价这篇讲得比较细 https://example.org/pricing-guide 有需要的自取。", "source_file": "example"},
+    {"chat": "示例·独立开发者交流群", "sender": "群公告", "time": "2026-10-20T18:00:00+08:00", "content": "[红包]", "source_file": "example"}
+  ]
+}

@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+*.bak-*
+.DS_Store
+.venv/
+venv/
+
+# Runtime configuration, personal mappings and generated reports never belong in git.
+.group-daily.json
+group-daily.json
+group-names.json
+output/
+reports/

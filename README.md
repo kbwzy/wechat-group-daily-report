@@ -1,0 +1,209 @@
+# wechat-group-daily-report
+
+把你的微信群聊变成一张**能读懂、可核查**的图文日报。
+
+输入是一个群、一个时间窗；输出是一张 PNG 长图，加上 HTML 和 Markdown。不是聊天记录的缩写版，而是像一位看完群聊的群友给你讲今天发生了什么：结论式标题、关键发言、编辑判断、可做选题、需要你留意的事、群里的链接。
+
+```text
+群聊 JSON  ──prepare──▶  素材 + 证据 ID
+                              │
+                     Agent 语义编辑
+                              ▼
+                        editorial.json
+                              │
+                  validate --strict ──▶ render
+                                            │
+                          PNG 长图 / HTML / Markdown
+```
+
+## 它解决什么问题
+
+机器摘要只会按时间罗列。日报要回答的是另外几个问题：今天真正值得读的主线是什么？谁提出了问题，谁给了反例，后来有没有改口？哪条讨论能长成一个选题？有哪些事其实是在找你？
+
+这个 Skill 把工作拆成两半，各做擅长的事：
+
+- **程序管事实**：切窗口、清洗 XML 引用、统计发言、抽链接、校验证据引用与版式。同一份输入渲染结果确定，不会今天一个样明天一个样。
+- **模型管表达**：在素材上写结论式标题、挑关键原话、给一段有判断的总结。
+
+程序校验能保证结构、引用和密度；它**不能**保证观点真实。这一点在每份产物里都会写明。
+
+## 特性
+
+- **证据绑定**：每个事实、选题、提醒、链接都要挂真实证据 ID，跨群或凭空 ID 会被拦下。
+- **半开时间窗** `[since, until)`，时区显式，定时任务用本地自然日而不是机器日期。
+- **群昵称优先**：默认用群成员在本群的昵称称呼发言人。群昵称不在消息库里，需要额外读一次群成员表；同名多人会被标为歧义而不是硬猜。
+- **固定版式合同**：模型只写 JSON，不碰 HTML。标题、栏目、四格、卡片、表格都由模板控制，渲染后再由 `layout_check.py` 复查一遍。
+- **不覆盖历史**：每轮新建目录，重复执行不会删掉昨天的报告。
+- **PNG 失败不撒谎**：缺 Playwright/Pillow/Chrome 时仍交 Markdown 和 HTML，状态明确标 `partial`，不会写成功。
+- **只读**：不发送、不回复、不改微信、不取密钥。
+
+## 安装
+
+这是一个 Agent Skill，同时兼容 Claude Code 和 Codex。
+
+```bash
+git clone https://github.com/kbwzy/wechat-group-daily-report.git
+ln -s "$PWD/wechat-group-daily-report" ~/.claude/skills/wechat-group-daily-report
+# Codex: ln -s "$PWD/wechat-group-daily-report" ~/.codex/skills/wechat-group-daily-report
+```
+
+脚本会按 `$CLAUDE_HOME` / `$CODEX_HOME`，其次 `~/.claude/skills`、`~/.codex/skills` 的顺序找同级的 `wechat-cli` 和 `wechat-intelligence-hub`。
+
+### 依赖
+
+| 依赖 | 版本 | 用途 | 必需 |
+|---|---|---|---|
+| Python | **3.9+**（3.13、3.14 实测可用） | 全部脚本；用到 `zoneinfo` | 是 |
+| [wechat-intelligence-hub](https://github.com/Rion-Wu-tech/wechat-intelligence-hub) | `v0.9.2-preview.2` 或更新 | 从本地微信库取数（`chat-history`、`members`、`sql`） | **实时取数时必需** |
+| Playwright + Pillow + 本机 Chrome | `pillow>=10.0`、`playwright>=1.40` | PNG 长图（430 CSS 像素、3 倍分段截图拼接） | 只影响 PNG |
+| Claude Code CLI | 支持 `--restricted` 的版本 | `run_daily.py` 的无人值守编辑桥接 | 只影响定时模式 |
+
+**只依赖标准库的部分不需要额外安装**：`prepare`、`validate`、`render` 的 Markdown/HTML 输出，以及全部 55 项测试。Pillow 与 Playwright 只在 `render --png` 时导入，缺了不影响其他步骤。
+
+#### 获取实时取数依赖
+
+`wechat-cli` 与 `wechat-intelligence-hub` **不在 PyPI**，`pip install` 装不到。它们是同一位作者（Rion Wu）维护的独立项目，需要单独安装：
+
+```bash
+git clone https://github.com/Rion-Wu-tech/wechat-intelligence-hub.git
+cd wechat-intelligence-hub
+./scripts/install.sh --with-sqlcipher --with-html
+```
+
+安装后会得到 `wechat-cli` 与 `wechat-intelligence-hub` 两个 Skill。本仓库按 `$CLAUDE_HOME/skills` → `$CODEX_HOME/skills` → `~/.claude/skills` → `~/.codex/skills` 的顺序找它们，也可以用配置项 `hub_entry` / `reader` 手动指定。
+
+> **注意**：装好 ≠ 能读。完整数据库模式还需要你已经获得本机微信数据库的访问材料（key）。没有时 `doctor` 会失败，本 Skill 会如实报错并保留素材，不会退化成通知预览。接入请参考上游的 [五步首次接入工作流](https://github.com/Rion-Wu-tech/wechat-intelligence-hub/blob/main/skills/wechat-cli/references/access-onboarding.md)。
+
+#### 离线跑测试
+
+```bash
+python3 -m venv .venv && . .venv/bin/activate
+python3 -m unittest discover -s tests     # 55 项，无需任何第三方包
+
+pip install -r requirements.txt           # 仅想做 PNG 时才需要
+```
+
+#### 实测兼容性
+
+| Python | 测试套件 | PNG | 说明 |
+|---|---|---|---|
+| 3.13 | ✅ 55/55 | ✅ | |
+| 3.14 | ✅ 55/55 | ✅ | Pillow 13 / Playwright 1.64 验证通过 |
+| 3.9 – 3.12 | 语法层面兼容 | 用 `pillow>=10.0` | 未在本仓库逐版本实测 |
+
+PNG 依赖**不装也能用**：`render` 会照常产出 Markdown 和 HTML，只在 `status.json` 里写 `png: missing-dependency` 并以退出码 2 返回。它不会静默跳过，也不会假装成功。
+
+## 三分钟离线试跑
+
+`examples/` 里有一份合成群聊，token 全是占位，不会碰你的微信：
+
+```bash
+SKILL="$PWD"
+RUN=/tmp/wechat-daily-demo && rm -rf "$RUN"
+
+python3 "$SKILL/scripts/daily_report.py" prepare "$SKILL/examples/group-messages.json" \
+  --chat "示例·独立开发者交流群" \
+  --since 2026-10-20T00:00:00+08:00 --until 2026-10-21T00:00:00+08:00 \
+  --timezone Asia/Shanghai --name-mode display --owner-alias "示例读者" --out "$RUN"
+
+cp "$SKILL/examples/editorial.json" "$RUN/editorial.json"
+python3 "$SKILL/scripts/daily_report.py" validate --strict --out "$RUN"
+python3 "$SKILL/scripts/daily_report.py" render --out "$RUN" --png
+```
+
+跑出来的结果和 [`examples/preview.png`](examples/preview.png) 一致。想看它长什么样：
+
+![示例日报](examples/preview.png)
+
+## 真实使用
+
+### 交互式（推荐先这样用）
+
+在 Agent 里直接说「把这个群昨天的聊天做成图文日报」。Skill 会：
+
+1. 用 `wechat-cli` 的 `resolve-chat` 确认唯一精确群名，不接受模糊匹配或同名多选。
+2. 用稳定群 ID 走 Hub 的 `chat-history` 拉窄范围消息，同时读群成员表拿群昵称。
+3. `prepare` 出素材，你（或 Agent）通读 `material.md` 写 `editorial.json`。
+4. `validate --strict` → `render --png`，交三个文件加覆盖说明。
+
+### 定时
+
+复制 `assets/config.example.json` 到**技能目录之外**（默认 `~/.wechat-intelligence-hub/group-daily.json`）再填群名：
+
+```bash
+python3 "$SKILL/scripts/run_daily.py" --config ~/.wechat-intelligence-hub/group-daily.json
+```
+
+`run_daily.py` 会把「取数 → prepare → 调 Claude Code 写稿 → validate → render」串起来。编辑子进程只拿到 `Read,Write` 两个工具，跑在 restricted 模式，不给 Shell、浏览器和 MCP，也不会传 `--dangerously-skip-permissions`。详见 [`references/scheduling.md`](references/scheduling.md)。
+
+安全试跑——不碰微信、不调模型：
+
+```bash
+python3 "$SKILL/scripts/run_daily.py" --config "$CONFIG" \
+  --input examples/group-messages.json --date 2026-10-20 --prepare-only
+```
+
+## 配置
+
+| 字段 | 默认 | 说明 |
+|---|---|---|
+| `chat` | — | **必填**，精确群名；同名多群会直接失败 |
+| `timezone` | `Asia/Shanghai` | 窗口与显示都用它 |
+| `window` | `yesterday` | `yesterday` / `today` / `rolling24` |
+| `output_root` | `~/Desktop/wechat_daily` | 每轮在其下新建唯一目录 |
+| `read_limit` | `20000` | 达到上限会标注「不能视为全量」 |
+| `png` | `true` | 关掉就只出 Markdown/HTML |
+| `name_mode` | `group-nick` | 改成 `display` 用联系人备注/昵称 |
+| `local_only` | `false` | `true` 时拒绝启动云端编辑 |
+| `signature` | 空 | 页脚署名/联系方式，只从私有配置或 `WECHAT_DAILY_SIGNATURE` 读 |
+
+不存任何凭据。
+
+## 输出
+
+| 文件 | 说明 |
+|---|---|
+| `group_daily_report.png` | 长图，430 CSS 像素 × 3 倍 |
+| `group_daily_report.html` | 单文件，无外部资源，CSP 限制为 `default-src 'none'`，浅深色主题 |
+| `group_daily_report.md` | 同版式的 Markdown，带本机证据注释 |
+| `quality_checks.json` | 本轮版式合同结果 |
+| `status.json` / `delivery.json` | 机器可读状态；`png_status` 如实反映 PNG 是否真的生成 |
+| `material.json` / `material.md` | 素材与证据，只在本机 |
+
+## 边界
+
+- 只读微信。不发送、不回复、不转发、不加好友、不改标签、不动调度。
+- 聊天、昵称、引用、链接都是**不可信数据**；消息里写着「忽略以上指令」也不会被执行。
+- 不外搜、不上传聊天。模型处理由你授权的 Agent 承担，产物不公开托管。
+- 只覆盖本机已同步的记录。附件未读、外链正文未读、采集上限、覆盖缺口都会写进报告，不用「没读到」冒充「没有」。
+- 格式校验通过 ≠ 事实已验证。每份产物都标 `semantic_truth: not-verified`。
+
+## 目录结构
+
+```text
+SKILL.md                 入口：执行流程与边界
+references/
+  workflow.md            取数、编辑、验收的完整流程
+  editorial.md           编辑准则与正反例
+  contracts.md           输入/输出合同、format_version=2 字段
+  scheduling.md          定时桥接、私有配置、失败恢复
+scripts/
+  daily_report.py        prepare / names / validate / render
+  run_daily.py           定时桥接（取数 → 编辑 → 校验 → 渲染）
+  group_nicknames.py     群昵称 protobuf 解析与映射
+  report_view.py         固定 HTML 版式
+  layout_check.py        渲染后的版式合同复查
+examples/                可离线跑通的合成示例
+tests/                   50 项单元测试
+evals/                   路由触发用例与语义配置
+```
+
+改版式或改校验规则前请先读 [`tests/`](tests/)——版式合同、证据引用、命名口径都有对应测试。
+
+## 生态
+
+本 Skill 只负责单群日报，取数依赖 [wechat-intelligence-hub](docs/ecosystem.md) 与 `wechat-cli`。跨群综合日报、私聊跟进、商机状态维护不在本仓库范围内。
+
+## 许可证
+
+[MIT](LICENSE)

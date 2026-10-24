@@ -1,0 +1,22 @@
+{
+  "should_trigger": [
+    {"text": "把指定群昨天的聊天做成图文日报", "family": "single-group"},
+    {"text": "这个群今天的观点总结，输出长图", "family": "single-group"},
+    {"text": "每天定时生成单群日报", "family": "schedule"},
+    {"text": "将这个群的消息整理成群日报长图，附HTML和Markdown", "family": "formats"},
+    {"text": "用已有JSON做指定群的群聊总结", "family": "replay"},
+    {"text": "为单群提炼观点与选题，生成PNG日报", "family": "editorial"}
+  ],
+  "should_not_trigger": [
+    {"text": "搜索所有微信里的报价", "family": "search"},
+    {"text": "我和某位客户聊到哪里了", "family": "person"},
+    {"text": "更新商机状态为成交", "family": "state"},
+    {"text": "把这个群的日报发送到微信群", "family": "send"}
+  ],
+  "near_neighbor": [
+    {"text": "生成跨群综合情报日报和私聊待回复清单", "family": "hub"},
+    {"text": "给我画一个销售PNG柱状图", "family": "image-only"},
+    {"text": "分析这张日报图片设计得怎么样", "family": "analysis-only"},
+    {"text": "帮我获取微信数据库密钥", "family": "access"}
+  ]
+}

@@ -1,0 +1,52 @@
+{
+  "format_version": 2,
+  "lede": "今天两件事：该不该加导出，最后变成了入口该放哪；起名卡一周，答案其实是先去查重。",
+  "topics": [
+    {
+      "title": "不是导出没用，是入口藏得太深",
+      "tone": "insight",
+      "kind": "discussion",
+      "evidence_ids": ["E00001", "E00002", "E00003", "E00004"],
+      "bullets": [
+        {"text": "**张三**想给记账小工具加导出 PDF，先问值不值。", "evidence_ids": ["E00001"]},
+        {"text": "**李四**第一反应是劝退：==上个月要加的那个都没人点==。", "evidence_ids": ["E00002"]},
+        {"text": "**王五**拿出实测：导出做了三个月，==一共 7 次点击==。", "evidence_ids": ["E00003"]},
+        {"text": "**李四**随后改口，问题不在功能在位置：导出本身要，==入口藏在设置第三层==。", "evidence_ids": ["E00004"]}
+      ],
+      "insight": "一次劝退差点让功能背锅。先把入口摆到看得见的地方，再判断有没有人用；顺序反了，数据会替你冤枉一个对的功能。"
+    },
+    {
+      "title": "排期之前，先数客服里问过几次",
+      "tone": "insight",
+      "kind": "discussion",
+      "evidence_ids": ["E00005"],
+      "bullets": [
+        {"text": "**孙七**的做法是==半年内被问到两次以上才排期==。", "evidence_ids": ["E00005"]}
+      ],
+      "boundary": "仅一条证据，是单个团队的自用标准，不是行业结论。",
+      "insight": "这个门槛不神秘，价值在于把「我觉得该做」换成一个能被翻出来的数字。门槛定几次可以商量，先有门槛比较要紧。"
+    },
+    {
+      "title": "起名卡一周，其实卡在查重上",
+      "tone": "neutral",
+      "kind": "discussion",
+      "evidence_ids": ["E00006", "E00007"],
+      "bullets": [
+        {"text": "**赵六**为产品名纠结了一周，问该自己起还是找设计师。", "evidence_ids": ["E00006"]},
+        {"text": "**孙七**给的顺序是==先查注册和搜索，再纠结好不好听==。", "evidence_ids": ["E00007"]}
+      ],
+      "insight": "好听是个无底洞，查重却是硬门槛。先把能被否决的选项排除掉，剩下的名字里挑顺口的，一周的纠结能压到一下午。"
+    }
+  ],
+  "angles": [
+    {"title": "一个功能被冤枉的三个月", "text": "**王五**那份 7 次点击的复盘，可以写成「数据没错，位置错了」的排期纠错案例。", "evidence_ids": ["E00003", "E00004"]}
+  ],
+  "attention": [
+    {"scope": "direct", "anchor_id": "E00008", "text": "**张三**在群里 @你，问日报工具最后有没有加导出。", "status": "待回应", "evidence_ids": ["E00008"]}
+  ],
+  "links": [
+    {"url": "https://example.org/export-postmortem", "title": "王五做的导出功能三个月复盘", "evidence_ids": ["E00003"]},
+    {"url": "https://example.org/analytics-basics", "title": "按需求频次决定排期的基础方法", "evidence_ids": ["E00005"]},
+    {"url": "https://example.org/pricing-guide", "title": "独立产品定价的详细说明", "evidence_ids": ["E00009"]}
+  ]
+}

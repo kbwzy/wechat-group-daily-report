@@ -1,0 +1,21 @@
+interface:
+  display_name: "单群图文日报"
+  short_description: "从微信原消息提炼观点，生成可核查的日报长图"
+  default_prompt: "使用 wechat-group-daily-report，基于 wechat-intelligence-hub 的指定群原消息完成素材、语义编辑、校验与 PNG/HTML/Markdown 交付。发言人默认用群昵称（--name-mode group-nick，必要时先跑 names 子命令生成映射）；使用format_version=2模板：标题带结论、姓名加粗、重点高亮，总结具体轻快而不夸大；validate --strict后按固定模板输出，不自由设计HTML，不发送微信。"
+policy:
+  allow_implicit_invocation: true
+compatibility:
+  canonical_format: "agent-skill-markdown"
+  adapter_targets: ["claude-code", "codex"]
+  activation:
+    mode: "explicit_or_intent"
+  execution:
+    context: "inline"
+    shell: "bash"
+  trust:
+    source_tier: "local"
+    remote_inline_execution: "forbid"
+    remote_metadata_policy: "Do not fetch or upload private chat content; model processing follows the authorized host Agent."
+  degradation:
+    claude-code: "Use native Read/Write and local Python; unattended bridge requires logged-in CLI."
+    codex: "Use native Agent editing and local Python; unattended bridge is Claude Code only."

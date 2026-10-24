@@ -1,0 +1,13 @@
+{
+  "chat": "请填写准确群名",
+  "timezone": "Asia/Shanghai",
+  "window": "yesterday",
+  "output_root": "~/Desktop/wechat_daily",
+  "read_limit": 20000,
+  "png": true,
+  "local_only": false,
+  "agent_timeout_seconds": 1800,
+  "name_mode": "group-nick",
+  "group_names_file": "~/.wechat-intelligence-hub/group-names.json",
+  "group_names_refresh": true
+}

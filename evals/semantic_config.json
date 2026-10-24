@@ -1,0 +1,13 @@
+{
+  "threshold": 0.6,
+  "positive_concepts": {
+    "single_group_report": {"weight": 0.8, "phrases": ["单群", "指定群", "这个群", "群日报长图", "群聊总结"]},
+    "visual_delivery": {"weight": 0.2, "phrases": ["图文日报", "长图", "PNG", "HTML", "Markdown"]}
+  },
+  "negative_concepts": {
+    "cross_group": {"weight": 0.8, "exclusive": true, "phrases": ["跨群综合", "所有微信", "私聊待回复"]},
+    "person_or_state": {"weight": 1.0, "exclusive": true, "phrases": ["客户聊到", "商机状态", "获取微信数据库密钥"]},
+    "not_report_creation": {"weight": 1.0, "exclusive": true, "phrases": ["发送到微信群", "设计得怎么样"]}
+  },
+  "fallback_positive_concepts": ["single_group_report", "visual_delivery"]
+}
