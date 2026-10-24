@@ -115,7 +115,7 @@ class ReferenceLayoutTests(unittest.TestCase):
         daily.validate_data(mat, ed)
         self.assertEqual(daily.render_html(mat, ed), daily.render_html(copy.deepcopy(mat), copy.deepcopy(ed)))
         text = daily.md_report(mat, ed)
-        self.assertTrue(text.startswith('[meta]2026-10-23（周五）'))
+        self.assertTrue(text.startswith('<!-- group-report:period -->2026-10-23（周五）'))
         self.assertIn('# 测试群<br>今日内容总结', text)
         self.assertIn('> **总结：**', text)
         self.assertIn('| 时间 | 事项 | 状态 |', text)

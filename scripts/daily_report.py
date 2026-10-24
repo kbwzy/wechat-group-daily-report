@@ -455,11 +455,11 @@ def report_links(mat,ed):
     return result
 
 def md_report(mat,ed):
-    lines=['[meta]'+reference_view().period_label(mat),'# '+md_escape(mat['chat'])+'<br>今日内容总结','',
-           '[lede]'+inline_md(ed['lede']),'',':::stats',f"{mat['message_count']} | 条消息",f"{mat['speaker_count']} | 人发言",
-           f"{len(ed.get('topics',[]))} | 个话题",f"{len(report_links(mat,ed))} | 个链接",':::','','## 活跃度','',':::rank']
+    lines=['<!-- group-report:period -->'+reference_view().period_label(mat),'# '+md_escape(mat['chat'])+'<br>今日内容总结','',
+           '<!-- group-report:lede -->'+inline_md(ed['lede']),'','<!-- group-report:stats:start -->',f"{mat['message_count']} | 条消息",f"{mat['speaker_count']} | 人发言",
+           f"{len(ed.get('topics',[]))} | 个话题",f"{len(report_links(mat,ed))} | 个链接",'<!-- group-report:stats:end -->','','## 活跃度','','<!-- group-report:rank:start -->']
     lines += [f"{md_escape(item['name'])} | {item['count']}" for item in mat.get('speakers',[])[:12]]
-    lines += [':::','','## 话题']
+    lines += ['<!-- group-report:rank:end -->','','## 话题']
     if not ed.get('topics'): lines += ['',md_escape(ed.get('topics_note') or '本时段没有足够的讨论内容。')]
     for topic in ed.get('topics',[]):
         lines += ['',f"### {md_escape(topic['title'])} · {topic_time(topic)}",'']
@@ -485,7 +485,7 @@ def md_report(mat,ed):
         first=min(sources,key=lambda message:message.get('time','')) if sources else {}
         links.append((first.get('time',''),f"- {short_time(first.get('time',''))} {md_bold(first.get('sender','分享者'))}｜{md_escape(row['title'])}｜[{md_escape(row['url'])}]({md_url(row['url'])})"))
     lines += [line for _,line in sorted(links)] or ['本时段群内没有可读链接分享。']
-    lines += ['','[note]以上内容由「微信个人情报库」群聊日报 Skill 整理。仅覆盖本机已采集记录，附件与外链正文未核验；完整证据保留在本机素材。']
+    lines += ['','<!-- group-report:footnote -->以上内容由「微信个人情报库」群聊日报 Skill 整理。仅覆盖本机已采集记录，附件与外链正文未核验；完整证据保留在本机素材。']
     sign = reference_view().signature_line()
     if sign: lines += ['', sign]
     return '\n'.join(lines)+'\n'

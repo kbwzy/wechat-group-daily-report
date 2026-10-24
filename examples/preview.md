@@ -1,24 +1,24 @@
-[meta]2026-10-20（周二） · 00:00 – 24:00
+<!-- group-report:period -->2026-10-20（周二） · 00:00 – 24:00
 # 示例·独立开发者交流群<br>今日内容总结
 
-[lede]今天两件事：该不该加导出，最后变成了入口该放哪；起名卡一周，答案其实是先去查重。
+<!-- group-report:lede -->今天两件事：该不该加导出，最后变成了入口该放哪；起名卡一周，答案其实是先去查重。
 
-:::stats
+<!-- group-report:stats:start -->
 10 | 条消息
 5 | 人发言
 3 | 个话题
 3 | 个链接
-:::
+<!-- group-report:stats:end -->
 
 ## 活跃度
 
-:::rank
+<!-- group-report:rank:start -->
 孙七 | 2
 张三 | 2
 李四 | 2
 王五 | 2
 赵六 | 1
-:::
+<!-- group-report:rank:end -->
 
 ## 话题
 
@@ -64,4 +64,4 @@
 - 10:05 **孙七**｜按需求频次决定排期的基础方法｜[https://example\.org/analytics-basics](https://example.org/analytics-basics)
 - 16:30 **王五**｜独立产品定价的详细说明｜[https://example\.org/pricing-guide](https://example.org/pricing-guide)
 
-[note]以上内容由「微信个人情报库」群聊日报 Skill 整理。仅覆盖本机已采集记录，附件与外链正文未核验；完整证据保留在本机素材。
+<!-- group-report:footnote -->以上内容由「微信个人情报库」群聊日报 Skill 整理。仅覆盖本机已采集记录，附件与外链正文未核验；完整证据保留在本机素材。

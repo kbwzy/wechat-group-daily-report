@@ -80,7 +80,7 @@ material.json包含统计、消息evidence_id、链接、覆盖边界、`names`�
 
 topic是彩色细边卡＋浅色标题标签＋时间＋发言＋“总结：”灰块。选题、需要你留意的、今日链接三节遵循目标图顺序。今日链接是`时间 姓名｜说明｜实际URL`裸列表；提醒是`时间｜事项｜状态`三列。详细来源、文件mtime留素材，不做成大段页脚。
 
-正式输出group_daily_report.md/html/png；quality_checks.json记录本轮版式合同。Markdown 使用同一套标记 `[meta]/[lede]/:::stats/:::rank`，与 HTML 栏目一一对应；证据ID以本机注释和editorial绑定保留。
+正式输出group_daily_report.md/html/png；quality_checks.json记录本轮版式合同。Markdown 使用 HTML 注释形式的区段标记（`<!-- group-report:* -->`），与 HTML 栏目一一对应，且在 Markdown 阅读器中不可见；证据ID以本机注释和editorial绑定保留。
 
 PNG使用已安装Python Playwright＋Pillow＋Chrome，以430 CSS像素、3倍分段截图拼接。缺依赖不下载，交Markdown/HTML并明确PNG失败。status.json、delivery.json如实记录；计划路径不算成功文件。
 
