@@ -35,6 +35,17 @@ class ScheduleTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             runner.bounds({}, date='2026-01-01', since='2026-01-01', until='2026-01-02')
 
+    def test_utc_bounds_parse_on_python_39(self):
+        """datetime.fromisoformat rejects a trailing Z before 3.11; bounds() must not."""
+        start, end = runner.bounds({'timezone': 'Asia/Shanghai'},
+                                   since='2026-10-23T00:00:00Z', until='2026-10-23T06:00:00Z')
+        self.assertEqual(start.isoformat(), '2026-10-23T08:00:00+08:00')
+        self.assertEqual(end.isoformat(), '2026-10-23T14:00:00+08:00')
+        # The lower-case form is just as common in the wild.
+        start, end = runner.bounds({'timezone': 'UTC'},
+                                   since='2026-10-23T00:00:00z', until='2026-10-23T06:00:00z')
+        self.assertEqual(start.hour, 0)
+
     def test_exact_resolution_refuses_fuzzy_and_duplicate(self):
         self.assertEqual(runner.resolve_exact({'data': {'candidates': [{'display_name': '测试群', 'username': 'a@chatroom'}]}}, '测试群'), 'a@chatroom')
         for rows in ([{'display_name': '测试群二', 'username': 'a'}],

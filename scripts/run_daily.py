@@ -87,6 +87,18 @@ def run(command, *, cwd=None, env=None, timeout=180):
     return result.stdout
 
 
+def _parse_iso(text):
+    """Parse an ISO timestamp, tolerating the trailing Z on Python < 3.11.
+
+    `datetime.fromisoformat` only understands a "Z" suffix from 3.11 onwards,
+    and only the uppercase form even then, so normalise it ourselves.
+    """
+    value = str(text).strip()
+    if value.endswith(('Z', 'z')):
+        value = value[:-1] + '+00:00'
+    return datetime.fromisoformat(value)
+
+
 def bounds(config, now=None, date=None, since=None, until=None):
     zone = ZoneInfo(config.get('timezone', 'Asia/Shanghai'))
     now = now or datetime.now(zone)
@@ -96,11 +108,11 @@ def bounds(config, now=None, date=None, since=None, until=None):
         raise ValueError('--date cannot be combined with --since/--until')
     if since:
         def parse(text):
-            value = datetime.fromisoformat(text)
+            value = _parse_iso(text)
             return value.replace(tzinfo=zone) if value.tzinfo is None else value.astimezone(zone)
         start, end = parse(since), parse(until)
     elif date:
-        start = datetime.fromisoformat(date).replace(tzinfo=zone, hour=0, minute=0, second=0, microsecond=0)
+        start = _parse_iso(date).replace(tzinfo=zone, hour=0, minute=0, second=0, microsecond=0)
         end = start + timedelta(days=1)
     elif config.get('window', 'yesterday') == 'yesterday':
         end = now.astimezone(zone).replace(hour=0, minute=0, second=0, microsecond=0)

@@ -19,7 +19,7 @@ def inline_html(value):
 
 def clock(value):
     try:
-        return datetime.fromisoformat(str(value)).strftime('%H:%M')
+        return datetime.fromisoformat(str(value).replace('Z', '+00:00')).strftime('%H:%M')
     except ValueError:
         return str(value)
 

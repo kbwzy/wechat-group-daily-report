@@ -132,7 +132,7 @@ $AGENTS_HOME/skills  →  $CLAUDE_HOME/skills  →  $CODEX_HOME/skills
 | Playwright + Pillow + 本机 Chrome | `pillow>=10.0`、`playwright>=1.40` | PNG 长图（430 CSS 像素、3 倍分段截图拼接） | 只影响 PNG |
 | Claude Code CLI | 支持 `--restricted` 的版本 | `run_daily.py` 的无人值守编辑桥接 | 只影响定时模式 |
 
-**只依赖标准库的部分不需要额外安装**：`prepare`、`validate`、`render` 的 Markdown/HTML 输出，以及全部 57 项测试。Pillow 与 Playwright 只在 `render --png` 时导入，缺了不影响其他步骤。
+**只依赖标准库的部分不需要额外安装**：`prepare`、`validate`、`render` 的 Markdown/HTML 输出，以及全部 58 项测试。Pillow 与 Playwright 只在 `render --png` 时导入，缺了不影响其他步骤。
 
 #### 获取实时取数依赖
 
@@ -152,7 +152,7 @@ cd wechat-intelligence-hub
 
 ```bash
 python3 -m venv .venv && . .venv/bin/activate
-python3 -m unittest discover -s tests     # 57 项，无需任何第三方包
+python3 -m unittest discover -s tests     # 58 项，无需任何第三方包
 
 pip install -r requirements.txt           # 仅想做 PNG 时才需要
 ```
@@ -161,9 +161,13 @@ pip install -r requirements.txt           # 仅想做 PNG 时才需要
 
 | Python | 测试套件 | PNG | 说明 |
 |---|---|---|---|
-| 3.13 | ✅ 57/57 | ✅ | |
-| 3.14 | ✅ 57/57 | ✅ | Pillow 13 / Playwright 1.64 验证通过 |
-| 3.9 – 3.12 | 语法层面兼容 | 用 `pillow>=10.0` | 未在本仓库逐版本实测 |
+| 3.9 | ✅ 58/58 | 用 `pillow>=10.0` | |
+| 3.10 | ✅ 58/58 | 用 `pillow>=10.0` | |
+| 3.11 / 3.12 | ✅ CI 覆盖 | 用 `pillow>=10.0` | 每次提交自动跑 |
+| 3.13 | ✅ 58/58 | ✅ | |
+| 3.14 | ✅ 58/58 | ✅ | Pillow 13 / Playwright 1.64 验证通过 |
+
+3.9–3.13 由 [CI](.github/workflows/test.yml) 在每次提交时自动验证。
 
 PNG 依赖**不装也能用**：`render` 会照常产出 Markdown 和 HTML，只在 `status.json` 里写 `png: missing-dependency` 并以退出码 2 返回。它不会静默跳过，也不会假装成功。
 
@@ -259,7 +263,7 @@ scripts/
   report_view.py         固定 HTML 版式
   layout_check.py        渲染后的版式合同复查
 examples/                可离线跑通的合成示例
-tests/                   57 项单元测试
+tests/                   58 项单元测试
 evals/                   路由触发用例与语义配置
 ```
 

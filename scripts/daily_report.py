@@ -450,13 +450,13 @@ def md_url(url):
     return str(url).replace("(","%28").replace(")","%29").replace("<","%3C").replace(">","%3E")
 
 def short_time(value):
-    try: return dt.datetime.fromisoformat(str(value)).strftime("%H:%M")
+    try: return dt.datetime.fromisoformat(str(value).replace("Z","+00:00")).strftime("%H:%M")
     except ValueError: return str(value)
 
 def topic_time(t):
     start=str(t.get("start","")); end=str(t.get("end",""))
     try:
-        a=dt.datetime.fromisoformat(start); b=dt.datetime.fromisoformat(end)
+        a=dt.datetime.fromisoformat(start.replace("Z","+00:00")); b=dt.datetime.fromisoformat(end.replace("Z","+00:00"))
         return (a.strftime("%m-%d ") if a.date()!=b.date() else "")+a.strftime("%H:%M")+"–"+b.strftime("%H:%M")
     except ValueError: return start+"–"+end
 
