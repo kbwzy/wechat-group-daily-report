@@ -84,9 +84,7 @@ python3 "$SKILL/scripts/daily_report.py" validate --strict --out "$RUN"
 python3 "$SKILL/scripts/daily_report.py" render --out "$RUN" --png
 ```
 
-跑出来的结果和 [`examples/preview.png`](examples/preview.png) 一致。想看它长什么样：
-
-![示例日报](examples/preview.png)
+跑出来的结果和本文最上方那张示例日报一致——同一份合成数据、同一条命令。
 
 ## 安装
 
