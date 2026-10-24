@@ -41,13 +41,36 @@
 
 这是一个 Agent Skill，同时兼容 Claude Code 和 Codex。
 
+**把技能装在 `~/.agents/skills`，再用符号链接派发给各个 Agent。** 真实文件只有一份，Claude Code、Codex 或其他 Agent 都通过链接指向它——升级时只需要更新一处。
+
 ```bash
+# 1. 克隆到 skills 根目录之外（或任意你放仓库的地方）
 git clone https://github.com/kbwzy/wechat-group-daily-report.git
-ln -s "$PWD/wechat-group-daily-report" ~/.claude/skills/wechat-group-daily-report
-# Codex: ln -s "$PWD/wechat-group-daily-report" ~/.codex/skills/wechat-group-daily-report
+
+# 2. 真实安装位置
+mkdir -p ~/.agents/skills
+ln -s "$PWD/wechat-group-daily-report" ~/.agents/skills/wechat-group-daily-report
+
+# 3. 按需派发给各个 Agent（用哪个接哪个）
+mkdir -p ~/.claude/skills
+ln -s ~/.agents/skills/wechat-group-daily-report ~/.claude/skills/wechat-group-daily-report
+
+mkdir -p ~/.codex/skills
+ln -s ~/.agents/skills/wechat-group-daily-report ~/.codex/skills/wechat-group-daily-report
 ```
 
-脚本会按 `$CLAUDE_HOME` / `$CODEX_HOME`，其次 `~/.claude/skills`、`~/.codex/skills` 的顺序找同级的 `wechat-cli` 和 `wechat-intelligence-hub`。
+如果你只用一个 Agent，也可以跳过第 3 步——多数 Agent 同样会直接扫描 `~/.agents/skills`。
+
+### 同级依赖怎么找
+
+本技能需要 `wechat-cli` 和 `wechat-intelligence-hub`。它们**不必和本技能放在同一个根目录**：脚本会逐个依赖地在下面这些根目录里查找，找到即用，所以把它们装在 `~/.agents/skills`、而本技能装在别处也没有问题。
+
+```
+$AGENTS_HOME/skills  →  $CLAUDE_HOME/skills  →  $CODEX_HOME/skills
+~/.agents/skills     →  ~/.claude/skills     →  ~/.codex/skills
+```
+
+没有环境变量时按后一行。也可以用 `hub_entry`（hub.sh 路径）、`reader`（reader.sh 路径）、`hub_home`（Hub 项目目录）三项配置直接指定，绕过自动查找。
 
 ### 依赖
 

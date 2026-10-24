@@ -132,22 +132,47 @@ def directed_at_owner(message,owners):
                 (message.get('reply_to') in owners or any(re.search(r'@'+re.escape(name)+r'(?:\s|$|[，,。:：])',message.get('content','')) for name in owners)))
 
 
-def skills_root():
-    """Return the installed skills directory, honouring CLAUDE_HOME/CODEX_HOME."""
-    for variable in ("CLAUDE_HOME", "CODEX_HOME"):
+# `~/.agents/skills` is the canonical install location for user skills; the
+# tool-specific roots usually hold per-skill symlinks pointing back at it.
+SKILL_ROOTS=("~/.agents/skills","~/.claude/skills","~/.codex/skills")
+
+
+def skill_roots():
+    """Return existing skill roots, most canonical first, honouring *_HOME vars."""
+    roots=[]
+    for variable in ("AGENTS_HOME","CLAUDE_HOME","CODEX_HOME"):
         base=str(os.environ.get(variable) or "").strip()
-        if base:
-            candidate=Path(base).expanduser()
-            candidate=candidate if candidate.name=="skills" else candidate/"skills"
-            if candidate.is_dir(): return candidate
-    for root in (".claude/skills",".codex/skills"):
-        candidate=Path.home()/root
-        if candidate.is_dir(): return candidate
-    return Path.home()/".claude/skills"
+        if not base: continue
+        candidate=Path(base).expanduser()
+        candidate=candidate if candidate.name=="skills" else candidate/"skills"
+        if candidate.is_dir(): roots.append(candidate)
+    for root in SKILL_ROOTS:
+        candidate=Path(root).expanduser()
+        if candidate.is_dir(): roots.append(candidate)
+    seen,ordered=set(),[]
+    for candidate in roots:
+        resolved=str(candidate.resolve())
+        if resolved not in seen:
+            seen.add(resolved); ordered.append(candidate)
+    return ordered
+
+
+def skills_root():
+    """First existing skill root (kept for callers that need a single path)."""
+    roots=skill_roots()
+    return roots[0] if roots else Path(SKILL_ROOTS[0]).expanduser()
+
+
+def find_sibling(relative):
+    """Locate a sibling skill file across all roots; None when not installed."""
+    for root in skill_roots():
+        candidate=root/relative
+        if candidate.exists(): return candidate
+    return None
 
 
 def default_reader():
-    return skills_root()/"wechat-cli"/"scripts"/"reader.sh"
+    return find_sibling("wechat-cli/scripts/reader.sh") or (skills_root()/"wechat-cli"/"scripts"/"reader.sh")
 
 
 def name_mapping(args):

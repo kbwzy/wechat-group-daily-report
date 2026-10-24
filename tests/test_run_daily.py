@@ -2,6 +2,7 @@ import argparse
 import importlib.util
 from datetime import datetime
 import json
+import os
 from pathlib import Path
 import tempfile
 import unittest
@@ -186,6 +187,35 @@ class ScheduleTests(unittest.TestCase):
                                                Path('/bin/true'), {}, '', Path('/tmp'))
         self.assertEqual((file, mode), (None, 'display'))
         self.assertIn('回放', note)
+
+    def test_agents_root_is_canonical_and_dependencies_resolve_across_roots(self):
+        """~/.agents/skills is the install location; siblings may live in other roots."""
+        with tempfile.TemporaryDirectory() as td, patch.dict(os.environ, {'HOME': td}, clear=False):
+            for var in ('AGENTS_HOME', 'CLAUDE_HOME', 'CODEX_HOME'):
+                os.environ.pop(var, None)
+            home = Path(td)
+            (home / '.agents' / 'skills').mkdir(parents=True)
+            (home / '.claude' / 'skills' / 'wechat-cli' / 'scripts').mkdir(parents=True)
+            (home / '.claude' / 'skills' / 'wechat-cli' / 'scripts' / 'reader.sh').write_text('')
+            (home / '.codex' / 'skills' / 'wechat-intelligence-hub' / 'scripts').mkdir(parents=True)
+            (home / '.codex' / 'skills' / 'wechat-intelligence-hub' / 'scripts' / 'hub.sh').write_text('')
+
+            roots = runner.skill_roots()
+            self.assertEqual(roots[0], home / '.agents' / 'skills')
+            # Reader and Hub sit in different roots and must still both resolve.
+            self.assertEqual(runner.default_reader(), home / '.claude' / 'skills' / 'wechat-cli' / 'scripts' / 'reader.sh')
+            self.assertEqual(runner.find_sibling('wechat-intelligence-hub/scripts/hub.sh'),
+                             home / '.codex' / 'skills' / 'wechat-intelligence-hub' / 'scripts' / 'hub.sh')
+
+    def test_home_override_beats_default_roots(self):
+        """An explicit <X>_HOME/skills wins over the default ~/.agents root."""
+        with tempfile.TemporaryDirectory() as td, patch.dict(os.environ, {'AGENTS_HOME': td}, clear=False):
+            for var in ('CLAUDE_HOME', 'CODEX_HOME'):
+                os.environ.pop(var, None)
+            override = Path(td) / 'skills'
+            override.mkdir()
+            self.assertEqual(runner.skill_roots()[0], override)
+            self.assertEqual(runner.skills_root(), override)
 
     def test_hub_home_is_discovered_for_symlinked_wrapper(self):
         with tempfile.TemporaryDirectory() as td:

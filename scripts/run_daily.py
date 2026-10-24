@@ -19,28 +19,57 @@ SKILL = Path(__file__).resolve().parents[1]
 DEFAULT_CONFIG = Path.home() / '.wechat-intelligence-hub' / 'group-daily.json'
 
 
-SKILL_ROOTS = ('.claude/skills', '.codex/skills')
+# Ordered skill roots. `~/.agents/skills` is the canonical install location for
+# user skills; the tool-specific roots usually hold per-skill symlinks pointing
+# back at it. Sibling skills may live in different roots, so each dependency is
+# resolved independently rather than assuming one root holds everything.
+SKILL_ROOTS = ('~/.agents/skills', '~/.claude/skills', '~/.codex/skills')
 
 DEFAULT_READER = 'wechat-cli/scripts/reader.sh'
 
 
-def skills_root():
-    """Return the installed skills directory, honouring CLAUDE_HOME/CODEX_HOME."""
-    for variable, suffix in (('CLAUDE_HOME', '.claude/skills'), ('CODEX_HOME', '.codex/skills')):
+def skill_roots():
+    """Return existing skill roots, most canonical first, honouring *_HOME vars."""
+    roots = []
+    for variable in ('AGENTS_HOME', 'CLAUDE_HOME', 'CODEX_HOME'):
         base = os.environ.get(variable)
-        if base:
-            candidate = Path(base).expanduser() / ('skills' if suffix.endswith('skills') else '')
-            if candidate.is_dir():
-                return candidate
-    for root in SKILL_ROOTS:
-        candidate = Path.home() / root
+        if not base:
+            continue
+        candidate = Path(base).expanduser()
+        candidate = candidate if candidate.name == 'skills' else candidate / 'skills'
         if candidate.is_dir():
+            roots.append(candidate)
+    for root in SKILL_ROOTS:
+        candidate = Path(root).expanduser()
+        if candidate.is_dir():
+            roots.append(candidate)
+    # De-duplicate while preserving order.
+    seen, ordered = set(), []
+    for candidate in roots:
+        resolved = str(candidate.resolve())
+        if resolved not in seen:
+            seen.add(resolved)
+            ordered.append(candidate)
+    return ordered
+
+
+def skills_root():
+    """First existing skill root (kept for callers that need a single path)."""
+    roots = skill_roots()
+    return roots[0] if roots else Path(SKILL_ROOTS[0]).expanduser()
+
+
+def find_sibling(relative):
+    """Locate a sibling skill file across all roots; None when not installed."""
+    for root in skill_roots():
+        candidate = root / relative
+        if candidate.exists():
             return candidate
-    return Path.home() / SKILL_ROOTS[0]
+    return None
 
 
 def default_reader():
-    return skills_root() / DEFAULT_READER
+    return find_sibling(DEFAULT_READER) or (skills_root() / DEFAULT_READER)
 
 
 def read_json(path):
@@ -93,7 +122,9 @@ def find_hub(config):
     if config.get('hub_entry'):
         path = Path(config['hub_entry']).expanduser()
     else:
-        path = skills_root() / 'wechat-intelligence-hub' / 'scripts' / 'hub.sh'
+        path = find_sibling('wechat-intelligence-hub/scripts/hub.sh')
+        if path is None:
+            path = skills_root() / 'wechat-intelligence-hub' / 'scripts' / 'hub.sh'
     if not path.is_file():
         raise FileNotFoundError('Hub entry not found; set hub_entry in the private config')
     return path
